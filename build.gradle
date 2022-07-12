@@ -1,0 +1,27 @@
+plugins {
+    id 'java'
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'org.teslasoft.experiments.ndev.Main'
+        )
+    }
+}
+
+group 'org.teslasoft.experiments.ndev'
+version '0.0.1-alpha'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+    implementation 'com.google.code.gson:gson:2.9.0'
+}
+
+test {
+    useJUnitPlatform()
+}
