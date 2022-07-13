@@ -172,7 +172,7 @@ public class RequestNetworkController {
                         System.out.println("");
                         if (serverState.getState() == ServerState.State.DISCONNECTED) {
                             final String responseBody = Objects.requireNonNull(response.body()).string().trim();
-                            log.v(DEFAULT_LOG_TAG, "Received auth key: ".concat(Colors.ANSI_PURPLE).concat(responseBody).concat(Colors.ANSI_RESET));
+                            log.v(DEFAULT_LOG_TAG, "Sending auth token to ConsoleAuthenticator: ".concat(Colors.ANSI_PURPLE).concat(responseBody).concat(Colors.ANSI_RESET));
                             Main.setAuth_token(responseBody);
                             serverState.setState(ServerState.State.CONNECTED);
                         } else if (serverState.getState() == ServerState.State.CONNECTED || serverState.getState() == ServerState.State.AUTHENTICATION_FAILED) {
@@ -182,13 +182,21 @@ public class RequestNetworkController {
                                 log.e(DEFAULT_LOG_TAG, "Invalid session, exiting...");
                                 setResponse("Invalid session, exiting...", 1);
                             } else if (responseBody.equals("{\"code\": 101, \"message\": \"Invalid password\"}")) {
-                                System.out.println("Invalid password!");
+                                System.out.println(Colors.ANSI_RED.concat("Invalid password!"));
                                 serverState.setState(ServerState.State.AUTHENTICATION_FAILED);
                             } else {
                                 serverState.setState(ServerState.State.AUTHENTICATED);
                                 Main.setAuth_token(responseBody);
                                 // setResponse(responseBody, 0);
                             }
+                        } else if (serverState.getState() == ServerState.State.AUTHENTICATED || serverState.getState() == ServerState.State.BUSY) {
+                            final String responseBody = Objects.requireNonNull(response.body()).string().trim();
+                            if (responseBody.contains("errno140")) {
+                                System.out.println(Colors.ANSI_RED.concat(responseBody));
+                            } else {
+                                System.out.println(Colors.ANSI_RESET.concat(responseBody));
+                            }
+                            serverState.setState(ServerState.State.READY);
                         }
                     }
                 }

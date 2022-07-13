@@ -13,7 +13,8 @@ public class ServerState {
         CONNECTED,
         READY,
         AUTHENTICATION_FAILED,
-        CONNECTION_FAILED
+        CONNECTION_FAILED,
+        BUSY
     }
 
     private State serverState = State.DISCONNECTED;
@@ -30,7 +31,9 @@ public class ServerState {
             throw new SecurityException("Access violation at org.teslasoft.core.api.logger.Log org.teslasoft.core.logger.Log: Methods of this class can not be accessed without class initialization.");
         } else {
             serverState = state;
-            log.i(DEFAULT_LOG_TAG, "Server state changed to ".concat(serverState.toString()));
+            if (serverState != State.BUSY && serverState != State.READY) {
+                log.i(DEFAULT_LOG_TAG, "Server state changed to ".concat(serverState.toString()));
+            }
         }
     }
 

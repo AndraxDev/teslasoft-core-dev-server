@@ -27,12 +27,13 @@ public class Main {
     public static String USERNAME = "";
     public static String HOSTNAME = "id.teslasoft.org";
     public static String PS = "$";
+    public static String PATH = "~";
 
 
     public static void main(String[] args) throws IOException {
         SplashLogo splashLogo = new SplashLogo();
-        serverState = new ServerState();
         splashLogo.print();
+        serverState = new ServerState();
         log = new Log();
         log.i(Constants.DEFAULT_LOG_TAG, "Starting server...");
         log.i(Constants.DEFAULT_LOG_TAG, "Connecting to Teslasoft Core...");
@@ -120,14 +121,33 @@ public class Main {
 
     public static void lifeCycle() throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        System.out.print(Colors.ANSI_BLUE.concat(USERNAME).concat(Colors.ANSI_GREEN).concat("@").concat(HOSTNAME).concat(" ").concat(Colors.ANSI_YELLOW).concat(PS).concat(" ").concat(Colors.ANSI_RESET));
+        System.out.print("[CONSOLE] ".concat(Colors.ANSI_BLUE).concat(USERNAME).concat(Colors.ANSI_GREEN).concat("@").concat(HOSTNAME).concat(" ").concat(PATH).concat(" ").concat(Colors.ANSI_YELLOW).concat(PS).concat(" ").concat(Colors.ANSI_RESET));
         String command = reader.readLine();
         try {
-            if (command.equals("logout") || command.equals("exit")) {
+            if (command.trim().equals("logout") || command.trim().equals("exit")) {
                 System.out.println("logout");
                 System.out.println("Stopping server...");
                 System.exit(0);
+            } if (command.trim().equals("clear")) {
+                System.out.print("\033[H\033[2J");
+                System.out.flush();
+                lifeCycle();
+            } if (command.trim().equals("")) {
+                lifeCycle();
             } else {
+                serverState.setState(ServerState.State.BUSY);
+                System.out.print("Please wait");
+                api_connector.startRequestNetwork("GET", "https://id.teslasoft.org/protected/Console.php?auth_token=".concat(AUTH_TOKEN).concat("&command=").concat(command), "A", api_listener);
+
+                while (serverState.getState() == ServerState.State.BUSY) {
+                    System.out.print(".");
+                    try {
+                        Thread.sleep(50);
+                    } catch(InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+                System.out.println("");
                 lifeCycle();
             }
         } catch (Exception e) {
